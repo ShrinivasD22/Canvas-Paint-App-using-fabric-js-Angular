@@ -17,7 +17,8 @@ export class CanvasDrawingComponent implements AfterViewInit {
   selectedColor: string = '#000000';
   selectedTool: string = 'brush';
   enableColorFill: boolean = false;
-  activeObject: fabric.Object | null = null;
+  // activeObject: fabric.Object | null = null;
+  // fillColor!: HTMLElement | null;
    // Log enableColorFill whenever its value changes
    toggleColorFill() {
     console.log('enableColorFill:', this.enableColorFill);
@@ -26,6 +27,7 @@ export class CanvasDrawingComponent implements AfterViewInit {
   constructor(private renderer: Renderer2) { }
 
   ngAfterViewInit(): void {
+    // this.fillColor = document.querySelector("#fill-color");
     console.log('ngAfterViewInit: Initializing canvas');
     this.canvas = new fabric.Canvas(this.canvasRef.nativeElement, {
       isDrawingMode: false,
@@ -77,72 +79,6 @@ export class CanvasDrawingComponent implements AfterViewInit {
       }
     });
 
-
-
-// Check if there are selectable objects on the canvas
-const objects = this.canvas.getObjects();
-let selectableObjectsExist = false;
-
-for (const obj of objects) {
-    if (obj.selectable) {
-        selectableObjectsExist = true;
-        break;
-    }
-}
-
-if (selectableObjectsExist) {
-    // At least one selectable object exists on the canvas
-    console.log('Selectable objects exist on the canvas.');
-} else {
-    // No selectable objects found on the canvas
-    console.log('No selectable objects on the canvas.');
-}
-
-
-this.canvas.on('mouse:down', (event: fabric.IEvent) => {
-  // Get pointer coordinates
-  const pointer = this.canvas.getPointer(event.e);
-
-  // Convert pointer coordinates to a Point object
-  const pointerPoint = new fabric.Point(pointer.x, pointer.y);
-
-  // Get all objects at the pointer coordinates
-  const objectsAtPointer = this.canvas.getObjects().filter(obj => {
-    return obj.containsPoint(pointerPoint);
-  });
-
-  // Check if any objects are found
-  if (objectsAtPointer.length > 0) {
-    // Iterate through the objects to find the selectable one
-    for (const obj of objectsAtPointer) {
-      if (obj.selectable) {
-        // Apply color fill or any other action
-        this.applyColorFill(obj);
-        return; // Exit the loop after finding the first selectable object
-      }
-    }
-
-    // If no selectable object is found
-    console.log('No selectable object found at pointer coordinates.');
-  } else {
-    // If no objects are found at the pointer coordinates
-    console.log('No objects found at pointer coordinates.');
-  }
-});
-
-    // this.canvas.on('mouse:down', (event: fabric.IEvent) => {
-    //   console.log('selection created event started')
-
-    //   const activeObject = event.target;
-    //   if (activeObject && activeObject.selectable) {
-    //     // this.activeObject = activeObject;
-    //     console.log('Object selected:', activeObject);
-
-    //     this.applyColorFill(activeObject);
-
-    //   }
-    // });
-
   }
 
   startDrawShape(event: fabric.IEvent) {
@@ -153,17 +89,15 @@ this.canvas.on('mouse:down', (event: fabric.IEvent) => {
 
     switch (this.selectedTool) {
       case 'rectangle':
-        console.log('startDrawshape: Creatimg rectangle shape....');
         this.shape = new fabric.Rect({
           left: pointer.x,
           top: pointer.y,
           width: 0,
           height: 0,
-          fill: 'transparent',
+          fill: this.enableColorFill ? this.selectedColor : 'transparent',
           stroke: this.selectedColor,
           strokeWidth: this.brushWidth,
-          selectable:true
-
+          selectable: true
         });
         break;
       case 'circle':
@@ -172,7 +106,8 @@ this.canvas.on('mouse:down', (event: fabric.IEvent) => {
           left: pointer.x,
           top: pointer.y,
           radius: 0,
-          fill: 'transparent',
+          // fill: 'transparent',
+          fill: this.enableColorFill ? this.selectedColor : 'transparent',
           stroke: this.selectedColor,
           strokeWidth: this.brushWidth,
           selectable:true
@@ -185,7 +120,8 @@ this.canvas.on('mouse:down', (event: fabric.IEvent) => {
           top: pointer.y,
           width: 0,
           height: 0,
-          fill: 'transparent',
+          // fill: 'transparent',
+          fill: this.enableColorFill ? this.selectedColor : 'transparent',
           stroke: this.selectedColor,
           strokeWidth: this.brushWidth,
           selectable:true
@@ -304,49 +240,8 @@ this.canvas.on('mouse:down', (event: fabric.IEvent) => {
   }
 
 
-  applyColorFill(activeObject:fabric.Object) {
-    console.log('applyColorFill method called');
-    console.log('enableColorFill:', this.enableColorFill);
-
-    if (this.enableColorFill) {
-      console.log('Color fill functionality is enabled');
-// // Check if there are selectable objects on the canvas
-// const objects = this.canvas.getObjects();
-// let selectableObjectsExist = false;
-
-// for (const obj of objects) {
-//     if (obj.selectable) {
-//         selectableObjectsExist = true;
-//         break;
-//     }
-// }
-
-// if (selectableObjectsExist) {
-//     // At least one selectable object exists on the canvas
-//     console.log('Selectable objects exist on the canvas.');
-// } else {
-//     // No selectable objects found on the canvas
-//     console.log('No selectable objects on the canvas.');
-// }
-
-      if (this.activeObject instanceof fabric.Path || this.activeObject instanceof fabric.Rect || this.activeObject instanceof fabric.Circle || this.activeObject instanceof fabric.Triangle) {
-        // Cast activeObject to the appropriate type
-        const obj = this.activeObject as fabric.Rect;
 
 
-        // Change the type to fabric.Rect or any other fabric object type as needed
-        console.log(' activeobject:', obj);
-        // Apply fill color to the active object
-        obj.set('fill', this.selectedColor);
-        this.canvas.renderAll();
-        console.log('Fill color applied to the selected object:', this.selectedColor);
-      } else {
-        console.log('No object selected or not a valid shape');
-      }
-    } else {
-      console.log('Color fill functionality is disabled');
-    }
-  }
 
 }
 
