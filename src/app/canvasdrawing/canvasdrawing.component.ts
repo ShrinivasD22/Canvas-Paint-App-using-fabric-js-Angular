@@ -1,46 +1,64 @@
-import { AfterViewInit, Component, ElementRef, Renderer2, ViewChild } from '@angular/core';
+import { AfterViewInit, Component,  ElementRef, OnChanges, Renderer2, ViewChild,SimpleChanges } from '@angular/core';
 import { fabric } from 'fabric';
+
+
 
 @Component({
   selector: 'app-canvasdrawing',
   templateUrl: './canvasdrawing.component.html',
-  styleUrls: ['./canvasdrawing.component.scss']
+  styleUrls: ['./canvasdrawing.component.scss'],
+
 })
-export class CanvasDrawingComponent implements AfterViewInit {
+export class CanvasDrawingComponent implements AfterViewInit,OnChanges{
+[x: string]: any;
   @ViewChild('canvas')
   canvasRef!: ElementRef<HTMLCanvasElement>;
   canvas!: fabric.Canvas;
-  isDrawing: boolean = false;
+  selectedShape:fabric.Object | null = null;
+  isDrawing: boolean = true;
   shape: fabric.Object | null = null; // Track the currently drawn shape
   shapeStartPosition: fabric.Point | null = null; // Track the starting position of the shape
   brushWidth: number = 5;
   selectedColor: string = '#000000';
   selectedTool: string = 'brush';
   enableColorFill: boolean = false;
-  // activeObject: fabric.Object | null = null;
-  // fillColor!: HTMLElement | null;
-   // Log enableColorFill whenever its value changes
+  enabledelete:boolean=false;
+  isDragging: boolean = false;
+  ngOnChanges(changes: SimpleChanges): void {
+    if ('selectedtool' in changes) {
+      this.selectionTool(this.tool);
+    }
+  }
+
    toggleColorFill() {
     console.log('enableColorFill:', this.enableColorFill);
   }
 
-  constructor(private renderer: Renderer2) { }
+  toggleDelete(){
+    this.enabledelete=true;
+    console.log('enabledelete',this.enabledelete);
+  }
+  constructor(private renderer: Renderer2,
+    ) { }
 
+
+  tool:any;
   ngAfterViewInit(): void {
-    // this.fillColor = document.querySelector("#fill-color");
+
     console.log('ngAfterViewInit: Initializing canvas');
     this.canvas = new fabric.Canvas(this.canvasRef.nativeElement, {
-      isDrawingMode: false,
+      isDrawingMode: true,
       selection:true,
 
     });
+
     console.log('ngAfterViewInit: Canvas initialized');
+
     this.canvas.freeDrawingBrush.width = this.brushWidth;
     this.canvas.freeDrawingBrush.color = this.selectedColor;
     this.setCanvasBackground();
     this.setupEventListeners();
   }
-
   setCanvasBackground() {
     const rect = new fabric.Rect({
       left: 100,
@@ -55,9 +73,8 @@ export class CanvasDrawingComponent implements AfterViewInit {
     this.canvas.add(rect);
   }
 
-
-
   setupEventListeners() {
+
     this.canvas.on('mouse:down', (event: fabric.IEvent) => {
       if (this.selectedTool === 'rectangle' || this.selectedTool === 'circle' || this.selectedTool === 'triangle') {
         console.log("selectedshape",this.selectedTool);
@@ -97,7 +114,10 @@ export class CanvasDrawingComponent implements AfterViewInit {
           fill: this.enableColorFill ? this.selectedColor : 'transparent',
           stroke: this.selectedColor,
           strokeWidth: this.brushWidth,
-          selectable: true
+          selectable: true,
+          lockMovementX: false,
+          lockMovementY: false,
+
         });
         break;
       case 'circle':
@@ -204,27 +224,48 @@ export class CanvasDrawingComponent implements AfterViewInit {
       this.canvas.selection = false;
     }
   }
-  changeColor(color: string) {
-    this.selectedColor = color;
 
-    // Update brush color immediately after changing the selected color
-    if (this.selectedTool === 'brush' || this.selectedTool === 'eraser' || this.selectedTool === 'freehand') {
-      this.canvas.freeDrawingBrush.color = this.selectedColor;
+
+  selectShape(tool: string) {
+    this.selectedTool = tool;
+    const activeObject = this.canvas.getActiveObject();
+    console.log("selectedshape:", activeObject);
+    this.canvas.isDrawingMode = false;
+    this.canvas.selection = false;
+    if (this.enabledelete && activeObject) {
+      console.log('delete shape method calling');
+      this.deleteSelectedShape(activeObject);
     }
 
-    // If the selected tool is not brush, update the color of existing shapes
-    if (this.selectedTool !== 'brush') {
-      this.canvas.getObjects().forEach(obj => {
-        if (obj instanceof fabric.Path) { // Update brush color for freehand drawing
-          obj.set('stroke', this.selectedColor);
-          obj.set('dirty', true); // Forces redrawing the object
-        } else { // Update fill or stroke color for other shapes
-          obj.set('fill', this.selectedColor);
-          obj.set('stroke', this.selectedColor);
-        }
-      });
-      this.canvas.requestRenderAll(); // Render canvas to apply the changes
-    }
+  }
+
+
+deleteSelectedShape(activeObject: fabric.Object | null) {
+  console.log('delete shape method calling');
+  if (activeObject !== null) {
+    this.canvas.remove(activeObject);
+    this.canvas.renderAll();
+  } else {
+    console.log('No active object selected.');
+  }
+}
+
+
+selectionTool(tool: string) {
+  this.selectedTool = tool;
+  const activeObject = this.canvas.getActiveObject();
+  this.canvas.discardActiveObject();
+
+  if (this.selectedTool === 'rectangle' || this.selectedTool === 'circle' || this.selectedTool === 'triangle') {
+    console.log("selectedshape",this.selectedTool)
+    this.canvas.isDrawingMode = false;
+    this.canvas.freeDrawingBrush = new fabric.PencilBrush(this.canvas);
+    this.canvas.freeDrawingBrush.color = this.selectedColor;
+    this.canvas.freeDrawingBrush.width = this.brushWidth;
+  } else {
+    this.canvas.isDrawingMode = false;
+    this.canvas.selection = false;
+  }
   }
 
   clearCanvas() {
@@ -240,9 +281,18 @@ export class CanvasDrawingComponent implements AfterViewInit {
   }
 
 
-
-
+  updateBrushColor(color:string) {
+    if (this.selectedTool === 'brush' || this.selectedTool === 'eraser' || this.selectedTool === 'freehand') {
+      // this.selectedColor= color;
+      // Update the color of the free drawing brush
+      this.canvas.freeDrawingBrush.color = color;
+      // Call the setWidth method to ensure the change is applied
+      this.canvas.freeDrawingBrush.width = this.brushWidth;
+    }
+  }
 
 }
-
+function toggleEditMode() {
+  throw new Error('Function not implemented.');
+}
 

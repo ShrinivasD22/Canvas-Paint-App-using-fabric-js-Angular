@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { CanvasdrawingComponent } from './canvasdrawing.component';
+import { CanvasDrawingComponent } from './canvasdrawing.component';
 
 describe('CanvasdrawingComponent', () => {
-  let component: CanvasdrawingComponent;
-  let fixture: ComponentFixture<CanvasdrawingComponent>;
+  let component: CanvasDrawingComponent;
+  let fixture: ComponentFixture<CanvasDrawingComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [CanvasdrawingComponent]
+      declarations: [CanvasDrawingComponent]
     })
     .compileComponents();
-    
-    fixture = TestBed.createComponent(CanvasdrawingComponent);
+
+    fixture = TestBed.createComponent(CanvasDrawingComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
@@ -21,3 +21,7 @@ describe('CanvasdrawingComponent', () => {
     expect(component).toBeTruthy();
   });
 });
+
+
+
+

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+ @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
 
 * {
   margin: 0;
@@ -7,24 +7,30 @@
   font-family: 'Poppins', sans-serif;
 }
 
-body {
+
+
+
+
+/* body{
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 100vh;
   background: #4A98F7;
-}
+} */
 
 .container {
   display: flex;
   gap: 10px;
   padding: 10px;
   max-width: 1050px;
+
 }
 
 .tools-board {
   width: 210px;
   padding: 15px 22px 0;
+
 }
 
 .row {
@@ -91,21 +97,6 @@ body {
   border: 1px solid #bfbfbf;
 }
 
-.colors .option:nth-child(2) {
-  background-color: #000;
-}
-
-.colors .option:nth-child(3) {
-  background-color: #E02020;
-}
-
-.colors .option:nth-child(4) {
-  background-color: #6DD400;
-}
-
-.colors .option:nth-child(5) {
-  background-color: #4A98F7;
-}
 
 .colors .option.selected::before {
   position: absolute;
@@ -154,6 +145,10 @@ body {
   background: #4A98F7;
   border: 1px solid #4A98F7;
 }
+.buttons .delete{
+  background: #4A98F7;
+  border: 1px solid #4A98F7;
+}
 .drawing-board {
   flex: 1;
   overflow: hidden;
@@ -163,4 +158,17 @@ body {
   width: 100%;
   height: 100%;
 }
+
+
+
+/* canvas {
+  position: absolute; */
+  /* z-index: 1; Adjust as needed */
+
+/* } */
+/* .covering-element {
+    background-color: transparent;
+    pointer-events: none;
+} */
+
 
