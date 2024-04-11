@@ -397,7 +397,7 @@ export class CanvasDrawingComponent implements AfterViewInit, OnChanges {
     const files: FileList = event.target.files;
     const reader = new FileReader();
   
-    if (files.length > 0) {
+    // if (files.length > 0) {
       const file: File = files[0]; // Access the first file from the FileList
   
       reader.onload = (e: any) => {
@@ -409,7 +409,7 @@ export class CanvasDrawingComponent implements AfterViewInit, OnChanges {
       };
   
       reader.readAsDataURL(file); // Pass the file to readAsDataURL
-    }
+    // }
   }
 
   loadImageOnCanvas(imageUrl: string): void {
@@ -423,22 +423,22 @@ export class CanvasDrawingComponent implements AfterViewInit, OnChanges {
     });
   }
 
-  addTextToCanvas(text: string): void {
-    const newText = new fabric.Text(text, {
-      left: 50,
-      top: 50,
-      fill: 'black'
-    });
+  // addTextToCanvas(text: string): void {
+  //   const newText = new fabric.Text(text, {
+  //     left: 50,
+  //     top: 50,
+  //     fill: 'black'
+  //   });
 
-    this.canvas.add(newText);
-  }
+  //   this.canvas.add(newText);
+  // }
 
 
 
-  sendDataToApi(textData: string, fileInput: string): void {
+  sendDataToApi( fileInput: string): void {
     const dataToSend = {
       image: fileInput,
-      text: textData
+      // text: textData
     };
 
     this.apiService.sendData(dataToSend).subscribe(
