@@ -393,19 +393,23 @@ export class CanvasDrawingComponent implements AfterViewInit, OnChanges {
 
   //   reader.readAsDataURL(file);
   // }
-  handleFileInput(fileInput: any): void {
-    const file = fileInput.files[0];
+  handleFileInput(event: any): void {
+    const files: FileList = event.target.files;
     const reader = new FileReader();
-
-    reader.onload = (e: any) => {
-      const imageUrl = e.target.result;
-      this.loadImageOnCanvas(imageUrl);
-
-      // Reset file input value to clear it
-      fileInput.value ='';
-    };
-
-    reader.readAsDataURL(file);
+  
+    if (files.length > 0) {
+      const file: File = files[0]; // Access the first file from the FileList
+  
+      reader.onload = (e: any) => {
+        const imageUrl = e.target.result;
+        event.value = imageUrl;
+        this.loadImageOnCanvas(imageUrl);
+  
+        // Reset file input value to clear it
+      };
+  
+      reader.readAsDataURL(file); // Pass the file to readAsDataURL
+    }
   }
 
   loadImageOnCanvas(imageUrl: string): void {
