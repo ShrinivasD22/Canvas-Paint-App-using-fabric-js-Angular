@@ -1,5 +1,7 @@
-import { AfterViewInit, Component,  ElementRef, OnChanges, Renderer2, ViewChild,SimpleChanges } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnChanges, Renderer2, ViewChild, SimpleChanges } from '@angular/core';
 import { fabric } from 'fabric';
+import { CanvasService } from '../canvas.service';
+
 
 
 
@@ -9,12 +11,12 @@ import { fabric } from 'fabric';
   styleUrls: ['./canvasdrawing.component.scss'],
 
 })
-export class CanvasDrawingComponent implements AfterViewInit,OnChanges{
-[x: string]: any;
+export class CanvasDrawingComponent implements AfterViewInit, OnChanges {
+  [x: string]: any;
   @ViewChild('canvas')
   canvasRef!: ElementRef<HTMLCanvasElement>;
   canvas!: fabric.Canvas;
-  selectedShape:fabric.Object | null = null;
+  selectedShape: fabric.Object | null = null;
   isDrawing: boolean = true;
   shape: fabric.Object | null = null; // Track the currently drawn shape
   shapeStartPosition: fabric.Point | null = null; // Track the starting position of the shape
@@ -22,33 +24,35 @@ export class CanvasDrawingComponent implements AfterViewInit,OnChanges{
   selectedColor: string = '#000000';
   selectedTool: string = 'brush';
   enableColorFill: boolean = false;
-  enabledelete:boolean=false;
+  enabledelete: boolean = false;
   isDragging: boolean = false;
+  text: string = ''; 
+
+
   ngOnChanges(changes: SimpleChanges): void {
     if ('selectedtool' in changes) {
       this.selectionTool(this.tool);
     }
   }
 
-   toggleColorFill() {
+  toggleColorFill() {
     console.log('enableColorFill:', this.enableColorFill);
   }
 
-  toggleDelete(){
-    this.enabledelete=true;
-    console.log('enabledelete',this.enabledelete);
+  toggleDelete() {
+    this.enabledelete = true;
+    console.log('enabledelete', this.enabledelete);
   }
-  constructor(private renderer: Renderer2,
-    ) { }
+  constructor(private renderer: Renderer2, private apiService:CanvasService) { }
 
 
-  tool:any;
+  tool: any;
   ngAfterViewInit(): void {
 
     console.log('ngAfterViewInit: Initializing canvas');
     this.canvas = new fabric.Canvas(this.canvasRef.nativeElement, {
       isDrawingMode: true,
-      selection:true,
+      selection: true,
 
     });
 
@@ -59,25 +63,25 @@ export class CanvasDrawingComponent implements AfterViewInit,OnChanges{
     this.setCanvasBackground();
     this.setupEventListeners();
   }
+
   setCanvasBackground() {
     const rect = new fabric.Rect({
       left: 100,
       top: 100,
       fill: '#fff',
-      selectable:true,
+      selectable: true,
       // width: this.canvas.width,
       // height: this.canvas.height
-      width:100,
-      height:100
+      width: 100,
+      height: 100
     });
     this.canvas.add(rect);
   }
 
   setupEventListeners() {
-
     this.canvas.on('mouse:down', (event: fabric.IEvent) => {
       if (this.selectedTool === 'rectangle' || this.selectedTool === 'circle' || this.selectedTool === 'triangle') {
-        console.log("selectedshape",this.selectedTool);
+        console.log("selectedshape", this.selectedTool);
         this.startDrawShape(event);
       } else if (this.selectedTool === 'text') {
         this.startDrawText(event);
@@ -130,7 +134,7 @@ export class CanvasDrawingComponent implements AfterViewInit,OnChanges{
           fill: this.enableColorFill ? this.selectedColor : 'transparent',
           stroke: this.selectedColor,
           strokeWidth: this.brushWidth,
-          selectable:true
+          selectable: true
         });
         break;
       case 'triangle':
@@ -144,7 +148,7 @@ export class CanvasDrawingComponent implements AfterViewInit,OnChanges{
           fill: this.enableColorFill ? this.selectedColor : 'transparent',
           stroke: this.selectedColor,
           strokeWidth: this.brushWidth,
-          selectable:true
+          selectable: true
         });
         break;
     }
@@ -190,7 +194,7 @@ export class CanvasDrawingComponent implements AfterViewInit,OnChanges{
 
   startDrawText(event: fabric.IEvent) {
     console.log('startDrawText: Initializing text drawing...');
-    if (!event.pointer){
+    if (!event.pointer) {
       console.log('startDrawText: No pointer event found, exiting.');
       return;
     }
@@ -226,46 +230,46 @@ export class CanvasDrawingComponent implements AfterViewInit,OnChanges{
   }
 
 
-  selectShape(tool: string) {
+  // selectShape(tool: string) {
+  //   this.selectedTool = tool;
+  //   const activeObject = this.canvas.getActiveObject();
+  //   console.log("selectedshape:", activeObject);
+  //   this.canvas.isDrawingMode = false;
+  //   this.canvas.selection = false;
+  //   if (this.enabledelete && activeObject) {
+  //     console.log('delete shape method calling');
+  //     this.deleteSelectedShape(activeObject);
+  //   }
+
+  // }
+
+
+  deleteSelectedShape(activeObject: fabric.Object | null) {
+    console.log('delete shape method calling');
+    if (activeObject !== null) {
+      this.canvas.remove(activeObject);
+      this.canvas.renderAll();
+    } else {
+      console.log('No active object selected.');
+    }
+  }
+
+
+  selectionTool(tool: string) {
     this.selectedTool = tool;
     const activeObject = this.canvas.getActiveObject();
-    console.log("selectedshape:", activeObject);
-    this.canvas.isDrawingMode = false;
-    this.canvas.selection = false;
-    if (this.enabledelete && activeObject) {
-      console.log('delete shape method calling');
-      this.deleteSelectedShape(activeObject);
+    this.canvas.discardActiveObject();
+
+    if (this.selectedTool === 'rectangle' || this.selectedTool === 'circle' || this.selectedTool === 'triangle') {
+      console.log("selectedshape", this.selectedTool)
+      this.canvas.isDrawingMode = false;
+      this.canvas.freeDrawingBrush = new fabric.PencilBrush(this.canvas);
+      this.canvas.freeDrawingBrush.color = this.selectedColor;
+      this.canvas.freeDrawingBrush.width = this.brushWidth;
+    } else {
+      this.canvas.isDrawingMode = false;
+      this.canvas.selection = false;
     }
-
-  }
-
-
-deleteSelectedShape(activeObject: fabric.Object | null) {
-  console.log('delete shape method calling');
-  if (activeObject !== null) {
-    this.canvas.remove(activeObject);
-    this.canvas.renderAll();
-  } else {
-    console.log('No active object selected.');
-  }
-}
-
-
-selectionTool(tool: string) {
-  this.selectedTool = tool;
-  const activeObject = this.canvas.getActiveObject();
-  this.canvas.discardActiveObject();
-
-  if (this.selectedTool === 'rectangle' || this.selectedTool === 'circle' || this.selectedTool === 'triangle') {
-    console.log("selectedshape",this.selectedTool)
-    this.canvas.isDrawingMode = false;
-    this.canvas.freeDrawingBrush = new fabric.PencilBrush(this.canvas);
-    this.canvas.freeDrawingBrush.color = this.selectedColor;
-    this.canvas.freeDrawingBrush.width = this.brushWidth;
-  } else {
-    this.canvas.isDrawingMode = false;
-    this.canvas.selection = false;
-  }
   }
 
   clearCanvas() {
@@ -281,7 +285,7 @@ selectionTool(tool: string) {
   }
 
 
-  updateBrushColor(color:string) {
+  updateBrushColor(color: string) {
     if (this.selectedTool === 'brush' || this.selectedTool === 'eraser' || this.selectedTool === 'freehand') {
       // this.selectedColor= color;
       // Update the color of the free drawing brush
@@ -290,9 +294,143 @@ selectionTool(tool: string) {
       this.canvas.freeDrawingBrush.width = this.brushWidth;
     }
   }
+  
+  selectedShapes: fabric.Object[] = [];
+  isSelecting: boolean = false;
 
-}
-function toggleEditMode() {
-  throw new Error('Function not implemented.');
+  // ...
+
+  // setupEventListeners() {
+  //   this.canvas.on('mouse:down', (event: fabric.IEvent) => {
+  //     if (this.selectedTool === 'rectangle' || this.selectedTool === 'circle' || this.selectedTool === 'triangle') {
+  //       this.startDrawShape(event);
+  //     } else if (this.selectedTool === 'text') {
+  //       this.startDrawText(event);
+  //     } else if (this.selectedTool === 'selection') {
+  //       this.isSelecting = true;
+  //       this.selectShapeOnMouseDown(event);
+  //     }
+  //   });
+
+  //   this.canvas.on('mouse:move', (event: fabric.IEvent) => {
+  //     if (this.isDrawing && this.shapeStartPosition) {
+  //       this.updateShape(event);
+  //     }
+  //   });
+
+  //   this.canvas.on('mouse:up', () => {
+  //     if (this.isDrawing) {
+  //       this.endDrawShape();
+  //     } else if (this.isSelecting) {
+  //       this.isSelecting = false;
+  //     }
+  //   });
+  // }
+
+  selectShapeOnMouseDown(event: fabric.IEvent) {
+    const pointer = this.canvas.getPointer(event.e);
+    const objectsInRange = this.canvas.getObjects().filter(obj => {
+      const boundingBox = obj.getBoundingRect();
+      return (
+        pointer.x >= boundingBox.left &&
+        pointer.x <= boundingBox.left + boundingBox.width &&
+        pointer.y >= boundingBox.top &&
+        pointer.y <= boundingBox.top + boundingBox.height
+      );
+    }); 
+  }
+  selectShapeOnMouseMove(event: fabric.IEvent) {
+    const pointer = this.canvas.getPointer(event.e);
+    this.canvas.forEachObject((object) => {
+      if (this.selectedShapes.includes(object)) {
+        object.setCoords(); // This will update the object's coords
+      }
+    });
+  }
+
+  selectShapeOnMouseUp() {
+    this.selectedShapes.forEach((object) => {
+      object.set({
+        stroke: '',
+        strokeWidth: 0,
+      });
+    });
+  }
+
+  // ...
+
+  selectShape(tool: string) {
+    this.selectedTool = tool;
+    const activeObject = this.canvas.getActiveObject();
+    console.log("selectedshape:", activeObject);
+    this.canvas.isDrawingMode = false;
+    this.canvas.selection = false;
+    if (this.enabledelete && activeObject) {
+      console.log('delete shape method calling');
+      this.deleteSelectedShape(activeObject);
+    }
+
+    if (tool === 'selection') {
+      this.canvas.on('mouse:move', this.selectShapeOnMouseMove.bind(this));
+      this.canvas.on('mouse:up', this.selectShapeOnMouseUp.bind(this));
+    } else {
+      this.canvas.off('mouse:move', this.selectShapeOnMouseMove.bind(this));
+      this.canvas.off('mouse:up', this.selectShapeOnMouseUp.bind(this));
+      this.selectedShapes = [];
+    }
+  }
+
+  handleFileInput(event: any): void {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+
+    reader.onload = (e: any) => {
+      const imageData = e.target.result;
+      this.sendDataToApi('Your text data here', imageData);
+      this.loadImageOnCanvas(imageData);
+    };
+
+    reader.readAsDataURL(file);
+  }
+
+  loadImageOnCanvas(imageUrl: string): void {
+    fabric.Image.fromURL(imageUrl, (img) => {
+      img.set({
+        left: 0,
+        top: 0,
+      });
+
+      this.canvas.add(img);
+    });
+  }
+
+  addTextToCanvas(text: string): void {
+    const newText = new fabric.Text(text, {
+      left: 50,
+      top: 50,
+      fill: 'black'
+    });
+
+    this.canvas.add(newText);
+  }
+
+
+
+  sendDataToApi(textData: string, imageData: string): void {
+    const dataToSend = {
+      image: imageData,
+      text: textData
+    };
+
+    this.apiService.sendData(dataToSend).subscribe(
+      (response: any) => {
+        console.log('Data sent successfully:', response);
+      },
+      (error: any) => {
+        console.error('Error sending data:', error);
+      }
+    );
+  }
+
 }
 
