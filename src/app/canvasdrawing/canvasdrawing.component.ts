@@ -3,6 +3,7 @@ import { fabric } from 'fabric';
 
 
 
+
 @Component({
   selector: 'app-canvasdrawing',
   templateUrl: './canvasdrawing.component.html',
@@ -78,6 +79,7 @@ export class CanvasDrawingComponent implements AfterViewInit,OnChanges{
     this.canvas.on('mouse:down', (event: fabric.IEvent) => {
       if (this.selectedTool === 'rectangle' || this.selectedTool === 'circle' || this.selectedTool === 'triangle') {
         console.log("selectedshape",this.selectedTool);
+        // this.Canvas.startDrawShape(event);
         this.startDrawShape(event);
       } else if (this.selectedTool === 'text') {
         this.startDrawText(event);
@@ -291,8 +293,11 @@ selectionTool(tool: string) {
     }
   }
 
+
+
+
+
 }
 function toggleEditMode() {
   throw new Error('Function not implemented.');
 }
-
