@@ -38,6 +38,7 @@ export class CanvasDrawingComponent implements AfterViewInit, OnChanges {
   toggleColorFill() {
     console.log('enableColorFill:', this.enableColorFill);
   }
+  
 
   toggleDelete() {
     this.enabledelete = true;
@@ -380,14 +381,28 @@ export class CanvasDrawingComponent implements AfterViewInit, OnChanges {
     }
   }
 
-  handleFileInput(event: any): void {
-    const file = event.target.files[0];
+  // handleFileInput(event: any): void {
+  //   const file = event.target.files[0];
+  //   const reader = new FileReader();
+
+  //   reader.onload = (e: any) => {
+  //     const imageData = e.target.result;
+  //     this.sendDataToApi('Your text data here', imageData);
+  //     this.loadImageOnCanvas(imageData);
+  //   };
+
+  //   reader.readAsDataURL(file);
+  // }
+  handleFileInput(fileInput: any): void {
+    const file = fileInput.files[0];
     const reader = new FileReader();
 
     reader.onload = (e: any) => {
-      const imageData = e.target.result;
-      this.sendDataToApi('Your text data here', imageData);
-      this.loadImageOnCanvas(imageData);
+      const imageUrl = e.target.result;
+      this.loadImageOnCanvas(imageUrl);
+
+      // Reset file input value to clear it
+      fileInput.value ='';
     };
 
     reader.readAsDataURL(file);
@@ -416,9 +431,9 @@ export class CanvasDrawingComponent implements AfterViewInit, OnChanges {
 
 
 
-  sendDataToApi(textData: string, imageData: string): void {
+  sendDataToApi(textData: string, fileInput: string): void {
     const dataToSend = {
-      image: imageData,
+      image: fileInput,
       text: textData
     };
 

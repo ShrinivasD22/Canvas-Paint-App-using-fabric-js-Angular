@@ -23,10 +23,11 @@
             <span>Fill Color</span>
           </li>
           <li class="option shape-option">
-            <input type="file" (change)="handleFileInput($event)">
+            <input type="file" #fileInput (change)="handleFileInput(fileInput)">
+
           </li>
           <li class="option shape-option">
-<button (click)="sendDataToApi('Your text data here', 'Your image data here')">Create XML File</button>
+<button (click)="sendDataToApi(text, fileInput.value)">Create XML File</button>
 
             </li>
           <li>
